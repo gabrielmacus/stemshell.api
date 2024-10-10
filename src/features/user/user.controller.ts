@@ -2,8 +2,8 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Paginate, PaginateQuery } from 'nestjs-paginate';
 import { UserPaginationConfig } from './config/user-pagination.config';
-import { ZodValidationPipe } from '../crud/zod-validation.pipe';
 import { CreateUserDto, createUserSchema } from 'src/features/external/core/stemshell.shared/src/features/user/create-user.dto';
+import { ZodValidationPipe } from '../crud/zod-validation.pipe';
 
 @Controller('user')
 export class UserController {
