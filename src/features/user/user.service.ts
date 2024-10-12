@@ -7,9 +7,11 @@ import { PaginateQuery, PaginateConfig, Paginated } from 'nestjs-paginate';
 import * as bcrypt from 'bcrypt';
 import { ReadUserDto } from 'src/features/external/core/stemshell.shared/src/features/user/read-user.dto';
 import { CreateUserDto } from 'src/features/external/core/stemshell.shared/src/features/user/create-user.dto';
+import { UpdateUserDto } from 'src/features/external/core/stemshell.shared/src/features/user/update-user.dto';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 @Injectable()
-export class UserService extends CrudHandler<User, CreateUserDto,ReadUserDto> {
+export class UserService extends CrudHandler<User, CreateUserDto, UpdateUserDto,ReadUserDto> {
     constructor(
         @InjectRepository(User)
         protected userRepository:Repository<User>
@@ -17,16 +19,25 @@ export class UserService extends CrudHandler<User, CreateUserDto,ReadUserDto> {
         super(userRepository);
     }
 
-    mapRead(entity: User): ReadUserDto {
+    protected mapRead = (entity: User) :ReadUserDto => {
         return {
             created_at:entity.created_at,
             deleted_at:entity.deleted_at,
             updated_at:entity.updated_at,
             id:entity.id,
             username:entity.username
-        };
+        }; 
+    };
+
+    protected mapCreate = (entity: CreateUserDto):User => {
+        return entity as User;
+    };
+
+    protected mapUpdate = (entity: UpdateUserDto)
+      :QueryDeepPartialEntity<UpdateUserDto> => {
+      return entity;
     }
-    
+
     async validate(username:string, password:string){
         const user = await this.userRepository.findOneBy({username});
     }
@@ -34,4 +45,5 @@ export class UserService extends CrudHandler<User, CreateUserDto,ReadUserDto> {
     async hashPassword(password:string){
         return await bcrypt.hash(password, +process.env.USER_PASS_SALT_ROUNDS!);
     }
+    
 }
