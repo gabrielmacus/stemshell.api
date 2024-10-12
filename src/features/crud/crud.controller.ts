@@ -1,10 +1,9 @@
-import { Body, Delete, Get, Param, Patch, PipeTransform, Post } from "@nestjs/common";
+import { Body, ClassSerializerInterceptor, Delete, Get, Param, Patch, PipeTransform, Post, UseInterceptors, ValidationPipe } from "@nestjs/common";
 import { Paginate, PaginateConfig, PaginateQuery } from "nestjs-paginate";
-import { ZodValidationPipe } from "./zod-validation.pipe";
 import { CrudHandler } from "./crud.handler";
 import { BaseModel } from "./base-model.entity";
 
-export class CrudController<TEntity extends BaseModel, 
+export abstract class CrudController<TEntity extends BaseModel, 
                             TCreate = TEntity,
                             TUpdate = Partial<TCreate>,
                             TRead = TEntity >{
@@ -15,20 +14,23 @@ export class CrudController<TEntity extends BaseModel,
     ){
         
     }
-
+    
+    @UseInterceptors(ClassSerializerInterceptor)
     @Post()
     async create(
-        @Body(new ZodValidationPipe<TCreate>()) createDto: TCreate) 
+        @Body(new ValidationPipe())
+        createDto: TCreate) 
     {
-
         return await this.crudHandler.handleCreate(createDto);
     }
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Get()
     async findAll(@Paginate() query: PaginateQuery) {
         return await this.crudHandler.handleFindAll(query, this.paginationConfig);
     }
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Get(':id')
     async findOne(@Param('id') id: string) {
      return await this.crudHandler.handleFindOne(+id);
@@ -37,7 +39,7 @@ export class CrudController<TEntity extends BaseModel,
     @Patch(':id')
     async update(
         @Param('id') id: string, 
-        @Body() updateDto: TUpdate
+        @Body(new ValidationPipe()) updateDto: TUpdate
     ) {
         return await this.crudHandler.handleUpdate(+id, updateDto);
     }

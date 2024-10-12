@@ -11,7 +11,7 @@ import { UpdateUserDto } from 'src/features/external/core/stemshell.shared/src/f
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 @Injectable()
-export class UserService extends CrudHandler<User, CreateUserDto, UpdateUserDto,ReadUserDto> {
+export class UserService extends CrudHandler<User, CreateUserDto, UpdateUserDto> {
     constructor(
         @InjectRepository(User)
         protected userRepository:Repository<User>
@@ -19,15 +19,20 @@ export class UserService extends CrudHandler<User, CreateUserDto, UpdateUserDto,
         super(userRepository);
     }
 
+    protected mapRead=(entity:User)=>{
+        return entity
+    }
+
+    /*
     protected mapRead = (entity: User) :ReadUserDto => {
         return {
             created_at:entity.created_at,
             deleted_at:entity.deleted_at,
             updated_at:entity.updated_at,
             id:entity.id,
-            username:entity.username
+            username:entity.username,
         }; 
-    };
+    };*/
 
     protected mapCreate = (entity: CreateUserDto):User => {
         return entity as User;

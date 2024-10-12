@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import {  MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,4 +11,6 @@ import { UserSubscriber } from './user.subscriber';
   providers: [UserService, UserSubscriber],
   //exports:[]
 })
-export class UserModule {}
+export class UserModule {
+
+}

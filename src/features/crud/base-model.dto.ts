@@ -1,4 +1,4 @@
-export interface BaseModelDto{
+export class BaseModelDto{
     id:number
     created_at:Date
     updated_at?:Date
