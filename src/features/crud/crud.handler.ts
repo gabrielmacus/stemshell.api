@@ -2,43 +2,26 @@ import { NotFoundException } from "@nestjs/common";
 import { paginate, PaginateConfig, Paginated, PaginateQuery } from "nestjs-paginate";
 import { Repository } from "typeorm";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
-import { BaseModel } from "./base-model.entity";
+import { BaseModel } from "./entities/base-model.entity";
 
 // https://softwareengineering.stackexchange.com/questions/306890/is-it-bad-practice-that-a-controller-calls-a-repository-instead-of-a-service
-export abstract class CrudHandler<TEntity extends BaseModel,
-                        TCreate = TEntity,
-                        TUpdate = Partial<TCreate>,
-                        TRead = TEntity, 
-                        > {
+export abstract class CrudHandler<TEntity extends BaseModel> {
 
     constructor(
         protected repository:Repository<TEntity>
     ){
     }
 
-    protected abstract mapRead:(entity:TEntity) => TRead
-    protected abstract mapCreate:(entity:TCreate) => TEntity
-    protected abstract  mapUpdate:(entity:TUpdate) => QueryDeepPartialEntity<TEntity>
-
-    async handleCreate(createDto: TCreate) {
-        const result =  await this.repository.save(await this.mapCreate(createDto));
-        return await this.mapRead(result);
+    
+    async handleCreate(entity: TEntity) {
+        return await this.repository.save(entity);
     }
     
     async handleFindAll(query:PaginateQuery, config:PaginateConfig<TEntity>) {
-        const result = await paginate(
+        return await paginate(
             query, 
             this.repository,
             config);
-
-        return {
-            ...result,
-            ...{
-                data:await Promise.all(
-                    result.data.map(async(i)=>this.mapRead(i))
-                )
-            }
-        };
     }
 
     async handleFindOne(id: number) {
@@ -47,17 +30,16 @@ export abstract class CrudHandler<TEntity extends BaseModel,
         const result = await this.tipoInfraccionRepository
             .findOneBy({id});
         if(!result) throw new NotFoundException();
-        return await this.mapRead(result);
+        return result;
     }
     
-    async handleUpdate(id: number, updateDto: TUpdate) {
+    async handleUpdate(id: number, partialEntity: QueryDeepPartialEntity<TEntity>) {
         //https://github.com/typeorm/typeorm/issues/8939
         //@ts-expect-error
         if (!await this.repository.existsBy({id})) 
             throw new NotFoundException();
-        const entity = await this.mapUpdate(updateDto);
         const result =  await this.repository
-            .update(id, entity);
+            .update(id, partialEntity);
         
         return { affected: result.affected };
     }
