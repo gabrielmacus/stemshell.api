@@ -1,16 +1,16 @@
 import { CreateDateColumn, DeleteDateColumn, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export class BaseModel{
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({type:'bigint'})
   id:number
 
   @CreateDateColumn()
-  created_at:Date
+  createdAt:Date
 
   @UpdateDateColumn()
-  updated_at:Date
+  updatedAt:Date
 
   @Index()
   @DeleteDateColumn()
-  deleted_at:Date
+  deletedAt:Date
 }

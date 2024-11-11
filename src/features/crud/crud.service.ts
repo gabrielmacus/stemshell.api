@@ -1,11 +1,13 @@
 import { NotFoundException } from "@nestjs/common";
+import { CompoundCondition, FieldCondition } from "@ucast/core";
+import { allInterpreters, createSqlInterpreter, pg } from "@ucast/sql";
 import { paginate, PaginateConfig, Paginated, PaginateQuery } from "nestjs-paginate";
-import { Repository } from "typeorm";
+import { ObjectLiteral, Repository } from "typeorm";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
-import { BaseModel } from "./entities/base-model.entity";
+import { interpret } from '@ucast/sql/typeorm';
 
 // https://softwareengineering.stackexchange.com/questions/306890/is-it-bad-practice-that-a-controller-calls-a-repository-instead-of-a-service
-export abstract class CrudHandler<TEntity extends BaseModel> {
+export abstract class CrudService<TEntity extends ObjectLiteral> {
 
     constructor(
         protected repository:Repository<TEntity>
@@ -17,12 +19,25 @@ export abstract class CrudHandler<TEntity extends BaseModel> {
         return await this.repository.save(entity);
     }
     
-    async handleFindAll(query:PaginateQuery, config:PaginateConfig<TEntity>) {
+    async handleFindAll(
+        query:PaginateQuery, 
+        config:PaginateConfig<TEntity>,
+        relations?:string) {
+
+        config.select = !config.select && query.select? 
+                                ['id',...query.select] : 
+                                config.select;
+        //Permito cargar las relaciones explicitamente
+        config.relations = !config.relations ?  
+                                relations?.split(",") : 
+                                config.relations;
+
         return await paginate(
             query, 
-            this.repository,
+            this.repository.createQueryBuilder(),
             config);
     }
+
 
     async handleFindOne(id: number) {
         //https://github.com/typeorm/typeorm/issues/8939

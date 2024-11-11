@@ -1,10 +1,10 @@
 import { Paginated, PaginateQuery } from "nestjs-paginate";
-import { BaseModel } from "./entities/base-model.entity";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
+import { ObjectLiteral } from "typeorm";
 
-export interface ICrudController<TEntity  extends BaseModel>{
+export interface ICrudController<TEntity  extends ObjectLiteral>{
     create(entity: TEntity) : Promise<TEntity>;
-    findAll(query: PaginateQuery):Promise<Paginated<TEntity>>;
+    findAll(query: PaginateQuery, relations?:string):Promise<Paginated<TEntity>>;
     findOne(id: string): Promise<TEntity>;
     update(id: string,partialEntity: QueryDeepPartialEntity<TEntity>):
         Promise<{ affected?: number }>;

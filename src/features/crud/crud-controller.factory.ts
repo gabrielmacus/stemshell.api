@@ -1,13 +1,14 @@
-import { Body, ClassSerializerInterceptor, Delete, Get, Param, Patch, PipeTransform, Post, Type, UseInterceptors } from "@nestjs/common";
+import { Body, ClassSerializerInterceptor, Delete, Get, Param, Patch, PipeTransform, Post, Query, Type, UseInterceptors } from "@nestjs/common";
 import { Paginate, PaginateConfig, PaginateQuery } from "nestjs-paginate";
-import { CrudHandler } from "./crud.handler";
+import { CrudService } from "./crud.service";
 import { BaseModel } from "./entities/base-model.entity";
 import { QueryDeepPartialEntity, QueryPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 import { CrudValidationPipe } from "./pipes/validation.pipe";
 import { ICrudController } from "./crud-controller.interface";
+import { ObjectLiteral } from "typeorm";
 
 // https://stackoverflow.com/questions/71394797/nestjs-reusable-controller-with-validation
-export function CrudControllerFactory<TEntity extends BaseModel>(
+export function CrudControllerFactory<TEntity extends ObjectLiteral>(
     entityType:Type<TEntity>
 ) 
     : Type<ICrudController<TEntity>>{
@@ -17,11 +18,11 @@ export function CrudControllerFactory<TEntity extends BaseModel>(
         skipMissingProperties:true
     })
 
-    class CrudController<TEntity extends BaseModel> 
+    class CrudController<TEntity extends ObjectLiteral> 
         implements ICrudController<TEntity>{
 
         constructor(
-            protected crudHandler:CrudHandler<TEntity>,
+            protected crudHandler:CrudService<TEntity>,
             protected paginationConfig:PaginateConfig<TEntity>
         ){
             
@@ -38,8 +39,16 @@ export function CrudControllerFactory<TEntity extends BaseModel>(
 
         @UseInterceptors(ClassSerializerInterceptor)
         @Get()
-        async findAll(@Paginate() query: PaginateQuery) {
-            return await this.crudHandler.handleFindAll(query, this.paginationConfig);
+        async findAll(
+            @Paginate() query: PaginateQuery, 
+            @Query("relations") relations?:string) {
+            
+            return await this.crudHandler.handleFindAll(
+                query, 
+                //TODO: inyectar desde configuración para no tener que hacer una 
+                //copia
+                {...this.paginationConfig}, 
+                relations);
         }
 
         @UseInterceptors(ClassSerializerInterceptor)

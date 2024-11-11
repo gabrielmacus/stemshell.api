@@ -2,9 +2,10 @@ import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException, Valid
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { BaseModel } from '../entities/base-model.entity';
+import { ObjectLiteral } from 'typeorm';
 
 @Injectable()
-export class CrudValidationPipe<TEntity extends BaseModel> extends ValidationPipe {
+export class CrudValidationPipe<TEntity extends ObjectLiteral> extends ValidationPipe {
 
   constructor(protected type:Type<TEntity>,
     options?:ValidationPipeOptions){
