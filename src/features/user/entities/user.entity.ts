@@ -11,11 +11,11 @@ export class User extends BaseModel {
 
     //TODO: Modularize (decouple)
     @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/)
-    @Column({ type: 'varchar', length: 100, unique:true })
+    @Column({ type: 'varchar', length: 100 })
     password: string;
 
     @OneToMany(()=>Session, (session)=>session.user)
-    sessions: Session[]
+    sessions?: Session[]
 
     
 }

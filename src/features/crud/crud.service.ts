@@ -5,6 +5,7 @@ import { paginate, PaginateConfig, Paginated, PaginateQuery } from "nestjs-pagin
 import { ObjectLiteral, Repository } from "typeorm";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
 import { interpret } from '@ucast/sql/typeorm';
+import { Optional } from "utility-types";
 
 // https://softwareengineering.stackexchange.com/questions/306890/is-it-bad-practice-that-a-controller-calls-a-repository-instead-of-a-service
 export abstract class CrudService<TEntity extends ObjectLiteral> {
@@ -15,8 +16,8 @@ export abstract class CrudService<TEntity extends ObjectLiteral> {
     }
 
     
-    async handleCreate(entity: TEntity) {
-        return await this.repository.save(entity);
+    async handleCreate(entity: Optional<TEntity, 'id' | 'createdAt'>) {
+        return await this.repository.save(entity as TEntity);
     }
     
     async handleFindAll(
@@ -32,10 +33,11 @@ export abstract class CrudService<TEntity extends ObjectLiteral> {
                                 relations?.split(",") : 
                                 config.relations;
 
-        return await paginate(
+        const result = await paginate(
             query, 
             this.repository.createQueryBuilder(),
             config);
+        return result;
     }
 
 

@@ -4,18 +4,20 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService extends CrudService<User> {
     constructor(
         @InjectRepository(User)
-        protected userRepository:Repository<User>
+        protected userRepository:Repository<User>,
+        protected configService: ConfigService
     ){
         super(userRepository);
     }
 
     async hashPassword(password:string){
-        return await bcrypt.hash(password, +process.env.USER_PASS_SALT_ROUNDS!);
+        return await bcrypt.hash(password,this.configService.get<number>('USER_PASS_SALT_ROUNDS')!);
     }
     
 }
